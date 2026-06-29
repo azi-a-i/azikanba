@@ -71,7 +71,7 @@ export default function RootLayout({
         <meta name="google-site-verification" content="your-google-verification-code" />
         
         {/* Web App Manifest */}
-        <link rel="manifest" href="/web-app-manifest-512x512.png" />
+        <link rel="manifest" href="/manifest.webmanifest" />
       </head>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
