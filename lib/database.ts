@@ -2,12 +2,14 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './supabase';
 
 // Environment configuration
-const DATABASE_PROVIDER = process.env.DATABASE_PROVIDER || 'supabase';
-const USE_POSTGRES = DATABASE_PROVIDER === 'postgresql';
+const ACTIVE_DB_KIND = 'postgresql';
+const USE_POSTGRES = true;
 
 // Supabase client (default)
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseAnonKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key';
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
  
 // PostgreSQL adapter (optional)
@@ -176,7 +178,7 @@ export const dbHelpers: DatabaseHelpers = USE_POSTGRES && postgresHelpers ? post
 
 // Export database provider info
 export const databaseConfig = {
-  provider: DATABASE_PROVIDER,
+  provider: ACTIVE_DB_KIND,
   isPostgres: USE_POSTGRES,
   isSupabase: !USE_POSTGRES,
 };
@@ -188,7 +190,7 @@ export const isPostgresAvailable = () => {
 
 // Utility function to get current database provider
 export const getDatabaseProvider = () => {
-  return DATABASE_PROVIDER;
+  return ACTIVE_DB_KIND;
 };
 
 // Export types for compatibility

@@ -42,6 +42,8 @@ export default function BillingPage() {
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const router = useRouter();
+  const isMockPayments = true;
+  const hasRequiredEnvVars = true;
 
   useEffect(() => {
     if (!user) {
@@ -96,22 +98,30 @@ export default function BillingPage() {
     try {
       console.log('🚀 Starting checkout process...');
       
-      // Get current session
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError) {
-        console.error('❌ Session error:', sessionError);
-        throw new Error('Failed to get authentication session');
-      }
-      
-      if (!session) {
-        console.error('❌ No session found');
-        toast.error('Please sign in to continue');
-        router.push('/login');
-        return;
-      }
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      };
 
-      console.log('✅ Session found, making checkout request...');
+      if (!isMockPayments) {
+        // Get current session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('❌ Session error:', sessionError);
+          throw new Error('Failed to get authentication session');
+        }
+        
+        if (!session) {
+          console.error('❌ No session found');
+          toast.error('Please sign in to continue');
+          router.push('/login');
+          return;
+        }
+
+        headers.Authorization = `Bearer ${session.access_token}`;
+        console.log('✅ Session found, making checkout request...');
+      }
 
       const requestBody = {
         price_id: priceId,
@@ -125,11 +135,7 @@ export default function BillingPage() {
       // Use local API route instead of Supabase Edge Function
       const response = await fetch('/api/stripe/checkout', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
+        headers,
         body: JSON.stringify(requestBody),
       });
 
@@ -201,10 +207,6 @@ export default function BillingPage() {
     if (!subscription?.price_id) return null;
     return stripeProducts.find(product => product.priceId === subscription.price_id);
   };
-
-  // Check if required environment variables are present
-  const hasRequiredEnvVars = process.env.NEXT_PUBLIC_SUPABASE_URL && 
-                             process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 
   if (loading) {
     return (

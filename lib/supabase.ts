@@ -1,9 +1,21 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseAuthAdapter } from '@neondatabase/neon-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const neonAuthUrl =
+  process.env.NEXT_PUBLIC_NEON_AUTH_URL ||
+  'https://placeholder.neonauth.c-9.us-east-1.aws.neon.tech/neondb/auth';
+const neonDataApiUrl = neonAuthUrl
+  .replace('.neonauth.', '.apirest.')
+  .replace(/\/auth\/?$/, '/rest/v1');
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient<Database>({
+  auth: {
+    adapter: SupabaseAuthAdapter(),
+    url: neonAuthUrl,
+  },
+  dataApi: {
+    url: neonDataApiUrl,
+  },
+});
 
 export type Database = {
   public: {

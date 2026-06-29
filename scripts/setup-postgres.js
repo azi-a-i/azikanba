@@ -25,13 +25,7 @@ if (!fs.existsSync(envPath)) {
   process.exit(1);
 }
 
-// Check if DATABASE_PROVIDER is set to postgresql
 const envContent = fs.readFileSync(envPath, 'utf8');
-if (!envContent.includes('DATABASE_PROVIDER=postgresql')) {
-  console.log('INFO: DATABASE_PROVIDER is not set to postgresql');
-  console.log('To use PostgreSQL, set DATABASE_PROVIDER=postgresql in your .env.local file');
-  process.exit(0);
-}
 
 // Check if DATABASE_URL is configured
 if (!envContent.includes('DATABASE_URL=')) {

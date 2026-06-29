@@ -33,6 +33,20 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
+    const syncProfile = async (authUser: any) => {
+      if (!authUser?.id || !authUser?.email) return;
+
+      const metadata = authUser.user_metadata || authUser.raw_user_meta_data || {};
+      await supabase
+        .from('profiles')
+        .upsert({
+          id: authUser.id,
+          email: authUser.email,
+          full_name: metadata.full_name || metadata.name || authUser.name || null,
+          avatar_url: metadata.avatar_url || metadata.picture || authUser.image || null,
+        });
+    };
+
     // Get initial user
     const getInitialUser = async () => {
       try {
@@ -46,6 +60,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
+          await syncProfile(user);
           setUser({
             id: user.id,
             email: user.email || '',
@@ -68,6 +83,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (session?.user) {
+          await syncProfile(session.user);
           setUser({
             id: session.user.id,
             email: session.user.email || '',
